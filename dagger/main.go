@@ -41,6 +41,7 @@ type Lint struct {
 	verbose               bool
 }
 
+//goland:noinspection GoUnusedConst
 const (
 	OutputFormatJson   = "json"
 	OutputFormatJunit  = "junit"
@@ -49,11 +50,51 @@ const (
 	OutputFormatText   = "text"
 )
 
-const CRDSchemaPattern = ""
+const kubeconformImage = "ghcr.io/yannh/kubeconform:v0.6.6@sha256:e4c69e6966a4842196ad3babc6f4c869d4ee51dc306fcf012faf10b25bb63a9c"
+
+//goland:noinspection GoUnusedConst
+const CRDSchemaPattern = "{{.Group}}_{{.ResourceKind}}_{{.ResourceAPIVersion}}.json"
+
+func crdSchemaContainer() (*Container, error) {
+	ctr := dag.Apko().Wolfi([]string{"bash", "curl", "git", "python3", "py3-pip", "yq"}).
+		WithExec([]string{"pip", "install", "pyyaml"})
+
+	// Download the openapi2jsonschema.py script and return a dagger *File
+	openapi2jsonschemaScript := dag.HTTP("https://raw.githubusercontent.com/yannh/kubeconform/6ae8c45bc156ceeb1d421e9b217cfc0c7ba5828d/scripts/openapi2jsonschema.py")
+
+	ctr = ctr.
+		WithFile("/bin/openapi2jsonschema.py", openapi2jsonschemaScript, ContainerWithFileOpts{Permissions: 0750})
+	return ctr, nil
+}
 
 //goland:noinspection ALL
 func (m *Kubeconform) CRD_To_Schema(crdsDir *Directory) (*Directory, error) {
-	panic("implement me")
+	ctx := context.Background()
+	ctr, err := crdSchemaContainer()
+	if err != nil {
+		return nil, err
+	}
+
+	entries, err := crdsDir.Entries(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var args = []string{"/bin/openapi2jsonschema.py"}
+	for _, entry := range entries {
+		args = append(args, "/crds/"+entry)
+	}
+
+	output := dag.Directory()
+	ctr = ctr.
+		WithDirectory("/crds", crdsDir).
+		WithWorkdir("/output").
+		WithEnvVariable("FILENAME_FORMAT", "{fullgroup}_{kind}_{version}").
+		WithExec(args)
+
+	output = output.WithDirectory("/", ctr.Directory("/output"))
+
+	return output, nil
 }
 
 func (lint Lint) WithSchemas(pattern string, schemaDir *Directory) Lint {
@@ -199,11 +240,10 @@ func (lint Lint) Lint(ctx context.Context, manifests *Directory) (string, error)
 		args = append(args, "--verbose")
 	}
 
-	args = append(args, "/manifests")
-
 	ctr := dag.Container().
-		From("ghcr.io/yannh/kubeconform:v0.6.6").
-		WithDirectory("/manifests", manifests)
+		From(kubeconformImage)
+
+	args = append(args, "--schema-location", "default")
 
 	for i, schema := range lint.schemas {
 		path := "/schemas/" + strconv.Itoa(i)
@@ -211,7 +251,11 @@ func (lint Lint) Lint(ctx context.Context, manifests *Directory) (string, error)
 		args = append(args, "--schema-location", path+"/"+schema.pattern)
 	}
 
-	return ctr.WithExec(args).
+	args = append(args, "/manifests")
+
+	return ctr.
+		WithDirectory("/manifests", manifests).
+		WithExec(args).
 		Stdout(ctx)
 }
 
