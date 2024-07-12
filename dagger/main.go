@@ -266,10 +266,11 @@ func (lint Lint) Lint(ctx context.Context, manifests *Directory) (string, error)
 		args = append(args, "--schema-location", path+"/"+schema.Pattern)
 	}
 
-	args = append(args, "/manifests")
+	args = append(args, ".")
 
 	return ctr.
 		WithDirectory("/manifests", manifests).
+		WithWorkdir("/manifests").
 		WithExec(args).
 		Stdout(ctx)
 }
