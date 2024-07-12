@@ -102,115 +102,116 @@ func (m *Kubeconform) CRD_To_Schema(crdsDir *Directory) (*Schema, error) {
 	}, nil
 }
 
-func (lint Lint) WithSchemas(schema *Schema) Lint {
+func (lint *Lint) WithSchemas(schema *Schema) *Lint {
 	lint.schemas = append(lint.schemas, schema)
 	return lint
 }
 
-func (m *Kubeconform) WithSchemas(schema *Schema) Lint {
-	return Lint{}.WithSchemas(schema)
+func (m *Kubeconform) WithSchemas(schema *Schema) *Lint {
+	return (&Lint{}).WithSchemas(schema)
 }
 
-func (lint Lint) ExitOnError() Lint {
+func (lint *Lint) ExitOnError() *Lint {
 	lint.exitOnError = true
 	return lint
 }
 
-func (m *Kubeconform) ExitOnError() Lint {
-	return Lint{}.ExitOnError()
+func (m *Kubeconform) ExitOnError() *Lint {
+	return (&Lint{}).ExitOnError()
 }
 
-func (lint Lint) IgnoreFilenamePattern(pattern string) Lint {
+func (lint *Lint) IgnoreFilenamePattern(pattern string) *Lint {
 	lint.ignoreFilenamePattern = append(lint.ignoreFilenamePattern, pattern)
 	return lint
 }
 
-func (m *Kubeconform) IgnoreFilenamePattern(pattern string) Lint {
-	return Lint{}.IgnoreFilenamePattern(pattern)
+func (m *Kubeconform) IgnoreFilenamePattern(pattern string) *Lint {
+	return (&Lint{}).IgnoreFilenamePattern(pattern)
 }
 
-func (lint Lint) IgnoreMissingSchemas() Lint {
+func (lint *Lint) IgnoreMissingSchemas() *Lint {
 	lint.ignoreMissingSchemas = true
 	return lint
 }
 
-func (m *Kubeconform) IgnoreMissingSchemas() Lint {
-	return Lint{}.IgnoreMissingSchemas()
+func (m *Kubeconform) IgnoreMissingSchemas() *Lint {
+	return (&Lint{}).IgnoreMissingSchemas()
 }
 
-func (lint Lint) WithKubernetesVersion(version string) Lint {
+func (lint *Lint) WithKubernetesVersion(version string) *Lint {
 	lint.kubernetesVersion = version
 	return lint
 }
 
-func (m *Kubeconform) WithKubernetesVersion(version string) Lint {
-	return Lint{}.WithKubernetesVersion(version)
+func (m *Kubeconform) WithKubernetesVersion(version string) *Lint {
+	return (&Lint{}).WithKubernetesVersion(version)
 }
 
-func (lint Lint) WithParallelism(n int) Lint {
+func (lint *Lint) WithParallelism(n int) *Lint {
 	lint.parallelism = &n
 	return lint
 }
 
-func (m *Kubeconform) WithParallelism(n int) Lint {
-	return Lint{}.WithParallelism(n)
+func (m *Kubeconform) WithParallelism(n int) *Lint {
+	return (&Lint{}).WithParallelism(n)
 }
 
-func (lint Lint) WithOutputFormat(format string) Lint {
+func (lint *Lint) WithOutputFormat(format string) *Lint {
 	lint.outputFormat = format
 	return lint
 }
 
-func (m *Kubeconform) WithOutputFormat(format string) Lint {
-	return Lint{}.WithOutputFormat(format)
+func (m *Kubeconform) WithOutputFormat(format string) *Lint {
+	return (&Lint{}).WithOutputFormat(format)
 }
 
-func (lint Lint) RejectGVKs(gvks []string) Lint {
+func (lint *Lint) RejectGVKs(gvks []string) *Lint {
 	lint.reject = append(lint.reject, gvks...)
 	return lint
 }
 
-func (m *Kubeconform) RejectGVKs(gvks []string) Lint {
-	return Lint{}.RejectGVKs(gvks)
+func (m *Kubeconform) RejectGVKs(gvks []string) *Lint {
+	return (&Lint{}).RejectGVKs(gvks)
 }
 
-func (lint Lint) Strict() Lint {
+func (lint *Lint) Strict() *Lint {
 	lint.strict = true
 	return lint
 }
 
-func (m *Kubeconform) Strict() Lint {
-	return Lint{}.Strict()
+func (m *Kubeconform) Strict() *Lint {
+	return (&Lint{}).Strict()
 }
 
-func (lint Lint) SkipGVK(gvk string) Lint {
+func (lint *Lint) SkipGVK(gvk string) *Lint {
 	lint.skipGVK = append(lint.skipGVK, gvk)
 	return lint
 }
 
-func (m *Kubeconform) SkipGVK(gvk string) Lint {
-	return Lint{}.SkipGVK(gvk)
+func (m *Kubeconform) SkipGVK(gvk string) *Lint {
+	return (&Lint{}).SkipGVK(gvk)
 }
 
-func (lint Lint) WithSummary() Lint {
+func (lint *Lint) WithSummary() *Lint {
 	lint.summary = true
 	return lint
 }
 
-func (m *Kubeconform) WithSummary() Lint {
-	return Lint{}.WithSummary()
+func (m *Kubeconform) WithSummary() *Lint {
+	return (&Lint{}).WithSummary()
 }
 
-func (lint Lint) Verbose() Lint {
+func (lint *Lint) Verbose() *Lint {
 	lint.verbose = true
 	return lint
 }
 
-func (m *Kubeconform) Verbose() Lint {
-	return Lint{}.Verbose()
+func (m *Kubeconform) Verbose() *Lint {
+	return (&Lint{}).Verbose()
 }
 
-func (lint Lint) Lint(ctx context.Context, manifests *Directory) (string, error) {
+//goland:noinspection GoMixedReceiverTypes
+func (lint *Lint) Lint(ctx context.Context, manifests *Directory) (string, error) {
 	var args []string
 
 	if lint.exitOnError {
@@ -275,6 +276,7 @@ func (lint Lint) Lint(ctx context.Context, manifests *Directory) (string, error)
 		Stdout(ctx)
 }
 
+//goland:noinspection GoMixedReceiverTypes
 func (m *Kubeconform) Lint(ctx context.Context, manifests *Directory) (string, error) {
-	return Lint{}.Lint(ctx, manifests)
+	return (&Lint{}).Lint(ctx, manifests)
 }
