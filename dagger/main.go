@@ -23,11 +23,13 @@ import (
 type Kubeconform struct {
 }
 
+type Schema struct {
+	Pattern string
+	Specs   *Directory
+}
+
 type Lint struct {
-	schemas []struct {
-		pattern string
-		dir     *Directory
-	}
+	schemas               []*Schema
 	exitOnError           bool
 	ignoreFilenamePattern []string
 	ignoreMissingSchemas  bool
@@ -68,7 +70,7 @@ func crdSchemaContainer() (*Container, error) {
 }
 
 //goland:noinspection ALL
-func (m *Kubeconform) CRD_To_Schema(crdsDir *Directory) (*Directory, error) {
+func (m *Kubeconform) CRD_To_Schema(crdsDir *Directory) (*Schema, error) {
 	ctx := context.Background()
 	ctr, err := crdSchemaContainer()
 	if err != nil {
@@ -94,19 +96,19 @@ func (m *Kubeconform) CRD_To_Schema(crdsDir *Directory) (*Directory, error) {
 
 	output = output.WithDirectory("/", ctr.Directory("/output"))
 
-	return output, nil
+	return &Schema{
+		Pattern: CRDSchemaPattern,
+		Specs:   output,
+	}, nil
 }
 
-func (lint Lint) WithSchemas(pattern string, schemaDir *Directory) Lint {
-	lint.schemas = append(lint.schemas, struct {
-		pattern string
-		dir     *Directory
-	}{pattern: pattern, dir: schemaDir})
+func (lint Lint) WithSchemas(schema *Schema) Lint {
+	lint.schemas = append(lint.schemas, schema)
 	return lint
 }
 
-func (m *Kubeconform) WithSchemas(pattern string, schemaDir *Directory) Lint {
-	return Lint{}.WithSchemas(pattern, schemaDir)
+func (m *Kubeconform) WithSchemas(schema *Schema) Lint {
+	return Lint{}.WithSchemas(schema)
 }
 
 func (lint Lint) ExitOnError() Lint {
@@ -247,8 +249,8 @@ func (lint Lint) Lint(ctx context.Context, manifests *Directory) (string, error)
 
 	for i, schema := range lint.schemas {
 		path := "/schemas/" + strconv.Itoa(i)
-		ctr = ctr.WithDirectory(path, schema.dir)
-		args = append(args, "--schema-location", path+"/"+schema.pattern)
+		ctr = ctr.WithDirectory(path, schema.Specs)
+		args = append(args, "--schema-location", path+"/"+schema.Pattern)
 	}
 
 	args = append(args, "/manifests")
