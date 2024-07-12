@@ -16,6 +16,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -29,18 +30,30 @@ type Schema struct {
 }
 
 type Lint struct {
-	schemas               []*Schema
-	exitOnError           bool
-	ignoreFilenamePattern []string
-	ignoreMissingSchemas  bool
-	kubernetesVersion     string
-	parallelism           *int
-	outputFormat          string
-	reject                []string
-	skipGVK               []string
-	strict                bool
-	summary               bool
-	verbose               bool
+	// +private
+	Schemas []*Schema
+	// +private
+	ExitOnError bool
+	// +private
+	IgnoreFilenamePattern []string
+	// +private
+	IgnoreMissingSchemas bool
+	// +private
+	KubernetesVersion string
+	// +private
+	Parallelism *int
+	// +private
+	OutputFormat string
+	// +private
+	Reject []string
+	// +private
+	SkipGVK []string
+	// +private
+	Strict bool
+	// +private
+	Summary bool
+	// +private
+	Verbose bool
 }
 
 //goland:noinspection GoUnusedConst
@@ -103,7 +116,7 @@ func (m *Kubeconform) CRD_To_Schema(crdsDir *Directory) (*Schema, error) {
 }
 
 func (lint Lint) WithSchemas(schema *Schema) Lint {
-	lint.schemas = append(lint.schemas, schema)
+	lint.Schemas = append(lint.Schemas, schema)
 	return lint
 }
 
@@ -111,35 +124,35 @@ func (m *Kubeconform) WithSchemas(schema *Schema) Lint {
 	return Lint{}.WithSchemas(schema)
 }
 
-func (lint Lint) ExitOnError() Lint {
-	lint.exitOnError = true
+func (lint Lint) WithExitOnError() Lint {
+	lint.ExitOnError = true
 	return lint
 }
 
-func (m *Kubeconform) ExitOnError() Lint {
-	return Lint{}.ExitOnError()
+func (m *Kubeconform) WithExitOnError() Lint {
+	return Lint{}.WithExitOnError()
 }
 
-func (lint Lint) IgnoreFilenamePattern(pattern string) Lint {
-	lint.ignoreFilenamePattern = append(lint.ignoreFilenamePattern, pattern)
+func (lint Lint) WithIgnoreFilenamePattern(pattern string) Lint {
+	lint.IgnoreFilenamePattern = append(lint.IgnoreFilenamePattern, pattern)
 	return lint
 }
 
-func (m *Kubeconform) IgnoreFilenamePattern(pattern string) Lint {
-	return Lint{}.IgnoreFilenamePattern(pattern)
+func (m *Kubeconform) WithIgnoreFilenamePattern(pattern string) Lint {
+	return Lint{}.WithIgnoreFilenamePattern(pattern)
 }
 
-func (lint Lint) IgnoreMissingSchemas() Lint {
-	lint.ignoreMissingSchemas = true
+func (lint Lint) WithIgnoreMissingSchemas() Lint {
+	lint.IgnoreMissingSchemas = true
 	return lint
 }
 
-func (m *Kubeconform) IgnoreMissingSchemas() Lint {
-	return Lint{}.IgnoreMissingSchemas()
+func (m *Kubeconform) WithIgnoreMissingSchemas() Lint {
+	return Lint{}.WithIgnoreMissingSchemas()
 }
 
 func (lint Lint) WithKubernetesVersion(version string) Lint {
-	lint.kubernetesVersion = version
+	lint.KubernetesVersion = version
 	return lint
 }
 
@@ -148,7 +161,7 @@ func (m *Kubeconform) WithKubernetesVersion(version string) Lint {
 }
 
 func (lint Lint) WithParallelism(n int) Lint {
-	lint.parallelism = &n
+	lint.Parallelism = &n
 	return lint
 }
 
@@ -157,7 +170,7 @@ func (m *Kubeconform) WithParallelism(n int) Lint {
 }
 
 func (lint Lint) WithOutputFormat(format string) Lint {
-	lint.outputFormat = format
+	lint.OutputFormat = format
 	return lint
 }
 
@@ -165,35 +178,35 @@ func (m *Kubeconform) WithOutputFormat(format string) Lint {
 	return Lint{}.WithOutputFormat(format)
 }
 
-func (lint Lint) RejectGVKs(gvks []string) Lint {
-	lint.reject = append(lint.reject, gvks...)
+func (lint Lint) WithRejectGVKs(gvks []string) Lint {
+	lint.Reject = append(lint.Reject, gvks...)
 	return lint
 }
 
-func (m *Kubeconform) RejectGVKs(gvks []string) Lint {
-	return Lint{}.RejectGVKs(gvks)
+func (m *Kubeconform) WithRejectGVKs(gvks []string) Lint {
+	return Lint{}.WithRejectGVKs(gvks)
 }
 
-func (lint Lint) Strict() Lint {
-	lint.strict = true
+func (lint Lint) WithStrict() Lint {
+	lint.Strict = true
 	return lint
 }
 
-func (m *Kubeconform) Strict() Lint {
-	return Lint{}.Strict()
+func (m *Kubeconform) WithStrict() Lint {
+	return Lint{}.WithStrict()
 }
 
-func (lint Lint) SkipGVK(gvk string) Lint {
-	lint.skipGVK = append(lint.skipGVK, gvk)
+func (lint Lint) WithSkipGVK(gvk string) Lint {
+	lint.SkipGVK = append(lint.SkipGVK, gvk)
 	return lint
 }
 
-func (m *Kubeconform) SkipGVK(gvk string) Lint {
-	return Lint{}.SkipGVK(gvk)
+func (m *Kubeconform) WithSkipGVK(gvk string) Lint {
+	return Lint{}.WithSkipGVK(gvk)
 }
 
 func (lint Lint) WithSummary() Lint {
-	lint.summary = true
+	lint.Summary = true
 	return lint
 }
 
@@ -201,58 +214,59 @@ func (m *Kubeconform) WithSummary() Lint {
 	return Lint{}.WithSummary()
 }
 
-func (lint Lint) Verbose() Lint {
-	lint.verbose = true
+func (lint Lint) WithVerbose() Lint {
+	lint.Verbose = true
 	return lint
 }
 
-func (m *Kubeconform) Verbose() Lint {
-	return Lint{}.Verbose()
+func (m *Kubeconform) WithVerbose() Lint {
+	return Lint{}.WithVerbose()
 }
 
+//goland:noinspection GoMixedReceiverTypes
 func (lint Lint) Lint(ctx context.Context, manifests *Directory) (string, error) {
 	var args []string
 
-	if lint.exitOnError {
+	if lint.ExitOnError {
 		args = append(args, "--exit-on-error")
 	}
 
-	if len(lint.ignoreFilenamePattern) > 0 {
-		for _, pattern := range lint.ignoreFilenamePattern {
+	if len(lint.IgnoreFilenamePattern) > 0 {
+		for _, pattern := range lint.IgnoreFilenamePattern {
 			args = append(args, "--ignore-filename-pattern", pattern)
 		}
 	}
 
-	if lint.ignoreMissingSchemas {
+	if lint.IgnoreMissingSchemas {
 		args = append(args, "--ignore-missing-schemas")
 	}
 
-	if lint.kubernetesVersion != "" {
-		args = append(args, "--kubernetes-version", lint.kubernetesVersion)
+	if lint.KubernetesVersion != "" {
+		args = append(args, "--kubernetes-version", lint.KubernetesVersion)
 	}
 
-	if lint.parallelism != nil {
-		args = append(args, "-n", strconv.Itoa(*lint.parallelism))
+	if lint.Parallelism != nil {
+		args = append(args, "-n", strconv.Itoa(*lint.Parallelism))
 	}
 
-	if lint.outputFormat != "" {
-		args = append(args, "--output", lint.outputFormat)
+	if lint.OutputFormat != "" {
+		args = append(args, "--output", lint.OutputFormat)
 	}
 
-	if lint.reject != nil {
-		args = append(args, "--reject", strings.Join(lint.reject, ","))
+	if lint.Reject != nil {
+		args = append(args, "--reject", strings.Join(lint.Reject, ","))
 	}
 
-	if lint.skipGVK != nil {
-		args = append(args, "--skip", strings.Join(lint.skipGVK, ","))
+	if lint.SkipGVK != nil {
+		args = append(args, "--skip", strings.Join(lint.SkipGVK, ","))
 	}
 
-	if lint.summary {
+	if lint.Summary {
 		args = append(args, "--summary")
 	}
 
-	if lint.verbose {
-		args = append(args, "--verbose")
+	if lint.Verbose {
+		args = append(args, "--Verbose")
 	}
 
 	ctr := dag.Container().
@@ -260,7 +274,7 @@ func (lint Lint) Lint(ctx context.Context, manifests *Directory) (string, error)
 
 	args = append(args, "--schema-location", "default")
 
-	for i, schema := range lint.schemas {
+	for i, schema := range lint.Schemas {
 		path := "/schemas/" + strconv.Itoa(i)
 		ctr = ctr.WithDirectory(path, schema.Specs)
 		args = append(args, "--schema-location", path+"/"+schema.Pattern)
@@ -275,6 +289,11 @@ func (lint Lint) Lint(ctx context.Context, manifests *Directory) (string, error)
 		Stdout(ctx)
 }
 
+//goland:noinspection GoMixedReceiverTypes
 func (m *Kubeconform) Lint(ctx context.Context, manifests *Directory) (string, error) {
 	return Lint{}.Lint(ctx, manifests)
+}
+
+func (m Lint) Dump() string {
+	return fmt.Sprintf("%+v", m)
 }
