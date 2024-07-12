@@ -183,6 +183,15 @@ func (m *Kubeconform) Strict() Lint {
 	return Lint{}.Strict()
 }
 
+func (lint Lint) SkipGVK(gvk string) Lint {
+	lint.skipGVK = append(lint.skipGVK, gvk)
+	return lint
+}
+
+func (m *Kubeconform) SkipGVK(gvk string) Lint {
+	return Lint{}.SkipGVK(gvk)
+}
+
 func (lint Lint) WithSummary() Lint {
 	lint.summary = true
 	return lint
@@ -232,6 +241,10 @@ func (lint Lint) Lint(ctx context.Context, manifests *Directory) (string, error)
 
 	if lint.reject != nil {
 		args = append(args, "--reject", strings.Join(lint.reject, ","))
+	}
+
+	if lint.skipGVK != nil {
+		args = append(args, "--skip", strings.Join(lint.skipGVK, ","))
 	}
 
 	if lint.summary {
