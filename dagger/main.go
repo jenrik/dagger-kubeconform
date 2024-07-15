@@ -16,7 +16,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"strings"
 )
@@ -55,15 +54,6 @@ type Lint struct {
 	// +private
 	Verbose bool
 }
-
-//goland:noinspection GoUnusedConst
-const (
-	OutputFormatJson   = "json"
-	OutputFormatJunit  = "junit"
-	OutputFormatPretty = "pretty"
-	OutputFormatTap    = "tap"
-	OutputFormatText   = "text"
-)
 
 const kubeconformImage = "ghcr.io/yannh/kubeconform:v0.6.6@sha256:e4c69e6966a4842196ad3babc6f4c869d4ee51dc306fcf012faf10b25bb63a9c"
 
@@ -292,8 +282,4 @@ func (lint Lint) Lint(ctx context.Context, manifests *Directory) (string, error)
 //goland:noinspection GoMixedReceiverTypes
 func (m *Kubeconform) Lint(ctx context.Context, manifests *Directory) (string, error) {
 	return Lint{}.Lint(ctx, manifests)
-}
-
-func (m Lint) Dump() string {
-	return fmt.Sprintf("%+v", m)
 }
